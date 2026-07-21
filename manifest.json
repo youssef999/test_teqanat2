@@ -1,0 +1,99 @@
+{
+    "name": "تقنات | حلول وأنظمة بتقانة متطورة",
+    "short_name": "تقنات",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#8B5CF6",
+    "theme_color": "#8B5CF6",
+    "description": "تقنات — شركة برمجيات متخصصة في تطوير التطبيقات والمواقع الإلكترونية وتصميم UI/UX والهوية البصرية والتحول الرقمي.",
+    "orientation": "any",
+    "prefer_related_applications": false,
+    "lang": "ar",
+    "dir": "rtl",
+    "categories": [
+        "business",
+        "productivity",
+        "utilities"
+    ],
+    "screenshots": [
+        {
+            "src": "icons/screenshot-wide.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "الصفحة الرئيسية — تقنات"
+        },
+        {
+            "src": "icons/screenshot-mobile.png",
+            "sizes": "750x1334",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "تقنات — عرض الجوال"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "خدماتنا",
+            "short_name": "الخدمات",
+            "description": "استعرض خدماتنا البرمجية والتقنية",
+            "url": "/services",
+            "icons": [
+                {
+                    "src": "icons/Icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "مشاريعنا",
+            "short_name": "المشاريع",
+            "description": "تصفح أعمالنا ومشاريعنا الناجحة",
+            "url": "/projects",
+            "icons": [
+                {
+                    "src": "icons/Icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "تواصل معنا",
+            "short_name": "تواصل",
+            "description": "تواصل مع فريق تقنات",
+            "url": "/contact",
+            "icons": [
+                {
+                    "src": "icons/Icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ],
+    "related_applications": [],
+    "iarc_rating_id": "",
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

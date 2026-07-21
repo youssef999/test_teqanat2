@@ -1,0 +1,44 @@
+# Robots.txt for Teqanat - https://teqanat.com
+
+User-agent: *
+Allow: /
+
+# Explicit allows MUST precede the broad /*.json$ rule (sequential crawlers)
+Allow: /manifest.json
+Allow: /sitemap.xml
+
+# Disallow admin or private areas
+Disallow: /admin/
+Disallow: /private/
+
+# Block build/API JSON dumps; manifest + sitemap exempted above
+Disallow: /*.json$
+Disallow: /flutter_service_worker.js
+
+Crawl-delay: 1
+
+Sitemap: https://teqanat.com/sitemap.xml
+
+# Google specific
+User-agent: Googlebot
+Allow: /
+Allow: /manifest.json
+Allow: /sitemap.xml
+Crawl-delay: 0
+
+# Bing specific
+User-agent: Bingbot
+Allow: /
+Allow: /manifest.json
+Allow: /sitemap.xml
+Crawl-delay: 1
+
+# Social media crawlers
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /

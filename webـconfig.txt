@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <system.webServer>
+
+    <!-- دعم الصور webp -->
+    <staticContent>
+      <remove fileExtension=".webp" />
+      <mimeMap fileExtension=".webp" mimeType="image/webp" />
+    </staticContent>
+
+    <!-- إصلاح MIME Types مهمة للـ Flutter Web -->
+    <staticContent>
+      <mimeMap fileExtension=".json" mimeType="application/json" />
+      <mimeMap fileExtension=".wasm" mimeType="application/wasm" />
+      <mimeMap fileExtension=".map" mimeType="application/octet-stream" />
+      <mimeMap fileExtension=".webmanifest" mimeType="application/manifest+json" />
+    </staticContent>
+
+    <rewrite>
+      <rules>
+        
+        <!-- rule لتجاهل أي روابط خارجية -->
+        <rule name="Ignore external URLs" stopProcessing="true">
+          <match url=".*" />
+          <conditions>
+            <add input="{HTTP_HOST}" pattern=".*" negate="true" />
+          </conditions>
+          <action type="None" />
+        </rule>
+
+        <!-- rule فقط للـ SPA داخلي -->
+        <rule name="Flutter SPA Routes" stopProcessing="true">
+          <match url=".*" />
+          <conditions logicalGrouping="MatchAll">
+            <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" />
+            <add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" />
+          </conditions>
+          <action type="Rewrite" url="/index.html" />
+        </rule>
+
+      </rules>
+    </rewrite>
+
+  </system.webServer>
+</configuration>

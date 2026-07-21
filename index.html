@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  
+<head>
+  <!-- Must be first so early scripts (locale redirect) can read project base for GitHub Pages.
+       flutter build --base-href replaces /test_teqanat2/; flutter run defaults to /. -->
+  <base href="/test_teqanat2/">
+
+  <!-- GitHub Pages SPA + locale bootstrap.
+       Order matters: restore ?/path BEFORE locale logic.
+       Use history.replaceState (not location.replace) so /en|/ar never
+       re-hits the server (that caused the infinite ?/en~and~/en loop). -->
+  <script>
+    (function () {
+      var l = window.location;
+
+      // 1) spa-github-pages: /repo/?/en/about → /repo/en/about (no navigation)
+      if (l.search.length > 1 && l.search[1] === '/') {
+        var decoded = l.search.slice(1).split('&').map(function (s) {
+          return s.replace(/~and~/g, '&');
+        }).join('?');
+        // Keep repo root (/test_teqanat2/) even when trailing slash is missing
+        var root = l.pathname.endsWith('/') ? l.pathname.slice(0, -1) : l.pathname;
+        window.history.replaceState(null, null, root + decoded + l.hash);
+        l = window.location;
+      }
+
+      function appBase() {
+        var el = document.querySelector('base');
+        var href = (el && el.getAttribute('href')) || '/';
+        try {
+          if (/^https?:/i.test(href)) href = new URL(href).pathname;
+        } catch (e) {}
+        if (!href || href === '/') return '';
+        return href.replace(/\/$/, '');
+      }
+
+      function stripBase(pathname) {
+        var base = appBase();
+        var p = decodeURI(pathname || '/');
+        if (base && (p === base || p.indexOf(base + '/') === 0)) {
+          p = p.slice(base.length) || '/';
+        }
+        return p.replace(/\/$/, '') || '/';
+      }
+
+      function withBase(appPath) {
+        var base = appBase();
+        if (!appPath || appPath === '/') return base ? base + '/' : '/';
+        return (base || '') + appPath;
+      }
+
+      /** Soft URL update — never trigger a new HTTP request on GitHub Pages. */
+      function softNavigate(url) {
+        if (l.pathname + l.search + l.hash === url) return;
+        window.history.replaceState(null, null, url);
+        l = window.location;
+      }
+
+      // Drop leftover spa-github-pages junk from the query (?/… or &/…)
+      function cleanSearchParams() {
+        var raw = l.search;
+        if (!raw || raw.length < 2) return new URLSearchParams();
+        if (raw[1] === '/' || raw.indexOf('&/') !== -1 || raw.indexOf('~and~') !== -1) {
+          return new URLSearchParams();
+        }
+        return new URLSearchParams(raw);
+      }
+
+      var params = cleanSearchParams();
+      var langParam = params.get('lang');
+      var path = stripBase(l.pathname);
+
+      function localeFromPath(p) {
+        if (p === '/en' || p.indexOf('/en/') === 0) return 'en';
+        return 'ar';
+      }
+
+      function syncDocumentLocale(lang) {
+        lang = lang === 'en' ? 'en' : 'ar';
+        var bcp47 = lang === 'en' ? 'en-US' : 'ar-SA';
+        var dir = lang === 'ar' ? 'rtl' : 'ltr';
+        document.documentElement.lang = bcp47;
+        document.documentElement.setAttribute('dir', dir);
+        var contentLanguage = document.querySelector('meta[http-equiv="Content-Language"]');
+        if (contentLanguage) contentLanguage.setAttribute('content', bcp47);
+      }
+
+      function stripLocalePrefix(p) {
+        if (p === '/ar' || p === '/en') return '/';
+        if (p.indexOf('/ar/') === 0) return p.slice(3) || '/';
+        if (p.indexOf('/en/') === 0) return p.slice(3) || '/';
+        return p;
+      }
+
+      function toLocalizedPath(basePath, lang) {
+        var route = stripLocalePrefix(basePath);
+        if (route === '/') return '/' + lang;
+        return '/' + lang + route;
+      }
+
+      if (langParam === 'en' || langParam === 'ar') {
+        params.delete('lang');
+        var qs = params.toString();
+        softNavigate(withBase(toLocalizedPath(path, langParam)) + (qs ? '?' + qs : '') + l.hash);
+        path = stripBase(l.pathname);
+      }
+
+      if (path !== '/ar' && path !== '/en' && path.indexOf('/ar/') !== 0 && path.indexOf('/en/') !== 0) {
+        var navLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+        var preferred = navLang.indexOf('en') === 0 ? 'en' : 'ar';
+        var fallback = path === '/' ? '/' + preferred : '/' + preferred + path;
+        // Do not append old search — it may contain spa ?/ junk that grows forever
+        softNavigate(withBase(fallback) + l.hash);
+        path = stripBase(l.pathname);
+      }
+
+      syncDocumentLocale(localeFromPath(path));
+    })();
+  </script>
+
+  <!-- Primary Meta Tags -->
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <!-- Viewport is injected by Flutter web; omit meta viewport to avoid duplicate-tag warnings -->
+  <meta http-equiv="Content-Language" content="ar-SA">
+
+  <!-- Performance: preconnect + DNS prefetch for all external origins -->
+  <link rel="preconnect" href="https://apis.teqanat.com" crossorigin>
+  <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+  <link rel="dns-prefetch" href="https://apis.teqanat.com">
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com">
+  <link rel="dns-prefetch" href="https://www.google-analytics.com">
+  <!-- Highest-priority asset hints -->
+  <link rel="preload" href="flutter_bootstrap.js" as="script" fetchpriority="high">
+  <link rel="preload" href="icons/app_icon.png" as="image" fetchpriority="high">
+
+  <!-- SEO prerender (applyHead runs after meta tags below) -->
+  <script src="seo-prerender.js"></script>
+
+  <!-- SEO Meta Tags -->
+  <title>Teqanat | Software Development &amp; Digital Solutions — تقنات | حلول و انظمة بتقانة متطورة</title>
+  <meta name="title" id="meta-title" content="Teqanat | Software Development &amp; Digital Solutions — تقنات | حلول و انظمة بتقانة متطورة">
+  <meta name="description" id="meta-description"
+    content="Teqanat — Professional software company specializing in mobile app development, web solutions, UI/UX design, brand identity, and digital transformation.">
+  <meta name="keywords" id="meta-keywords"
+    content="software development, mobile app development, web development, iOS app development, Android app development, Flutter development, UI/UX design, brand identity design, digital transformation, software company Saudi Arabia, تقنيات, تطوير تطبيقات, تصميم مواقع, برمجة, تطبيقات الجوال">
+  <meta name="author" content="Teqanat">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="googlebot" content="index, follow">
+  <meta name="bingbot" content="index, follow">
+  <meta name="revisit-after" content="7 days">
+  <meta name="rating" content="general">
+  <meta name="distribution" content="global">
+  <meta name="coverage" content="Worldwide">
+  <meta name="target" content="all">
+  <meta name="HandheldFriendly" content="True">
+
+  <!-- Canonical + hreflang (path-based: /ar/* and /en/*) -->
+  <link rel="canonical" id="canonical-link" href="https://teqanat.com/ar">
+  <link rel="alternate" hreflang="ar" href="https://teqanat.com/ar" data-teqanat-hreflang="1">
+  <link rel="alternate" hreflang="en" href="https://teqanat.com/en" data-teqanat-hreflang="1">
+  <link rel="alternate" hreflang="x-default" href="https://teqanat.com/ar" data-teqanat-hreflang="1">
+
+  <!-- Open Graph / Facebook (WhatsApp, LinkedIn) -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" id="og-url" content="https://teqanat.com/ar">
+  <meta property="og:site_name" id="og-site-name" content="تقنات">
+  <meta property="og:title" id="og-title" content="تقنات | حلول و انظمة بتقانة متطورة">
+  <meta property="og:description" id="og-description"
+    content="شركة برمجيات متخصصة في تطوير التطبيقات والمواقع وتصميم الهوية الرقمية والتحول الرقمي.">
+  <meta property="og:image" content="https://teqanat.com/icons/og-banner.png">
+  <meta property="og:image:secure_url" content="https://teqanat.com/icons/og-banner.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1536">
+  <meta property="og:image:height" content="1024">
+  <meta property="og:image:alt" content="تقنات — حلول و أنظمة بتقانة متطورة">
+  <meta property="og:locale" content="ar_SA">
+  <meta property="og:locale:alternate" content="en_US">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@teqanat">
+  <meta name="twitter:creator" content="@teqanat">
+  <meta name="twitter:url" id="twitter-url" content="https://teqanat.com/ar">
+  <meta name="twitter:title" id="twitter-title" content="تقنات | حلول و انظمة بتقانة متطورة">
+  <meta name="twitter:description" id="twitter-description"
+    content="شركة برمجيات متخصصة في تطوير التطبيقات والمواقع وتصميم الهوية الرقمية والتحول الرقمي.">
+  <meta name="twitter:image" content="https://teqanat.com/icons/og-banner.png">
+  <meta name="twitter:image:alt" content="تقنات — حلول و أنظمة بتقانة متطورة">
+
+  <!-- Per-route title/meta (meta tags must exist before applyHead) -->
+  <script>
+    (function () {
+      if (window.TeqanatSeo && TeqanatSeo.applyHead) {
+        TeqanatSeo.applyHead();
+      }
+    })();
+  </script>
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="تقنات">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icons/Icon-192.png">
+
+  <!-- Android Chrome -->
+  <meta name="theme-color" content="#8B5CF6">
+  <meta name="msapplication-TileColor" content="#8B5CF6">
+  <meta name="msapplication-navbutton-color" content="#8B5CF6">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+  <link rel="icon" type="image/png" href="icons/app_icon.png">
+  <link rel="shortcut icon" type="image/png" href="icons/app_icon.png">
+  <link rel="mask-icon" href="icons/safari-pinned-tab.svg" color="#8B5CF6">
+
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    /* Branded loading — stays until flutter-first-frame */
+    .loading-container {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f172a;
+      overflow: hidden;
+      opacity: 1;
+      transition: opacity 0.15s ease;
+    }
+
+    .loading-container::before,
+    .loading-container::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(40px);
+      pointer-events: none;
+      will-change: opacity, transform;
+    }
+
+    .loading-container::before {
+      width: 220px;
+      height: 220px;
+      top: -40px;
+      right: -30px;
+      background: rgba(139, 92, 246, 0.3);
+      animation: splash-glow 4s ease-in-out infinite;
+    }
+
+    .loading-container::after {
+      width: 180px;
+      height: 180px;
+      bottom: -30px;
+      left: -20px;
+      background: rgba(167, 139, 250, 0.18);
+      animation: splash-glow 4s ease-in-out infinite reverse;
+    }
+
+    /* Disable heavy animations on low-end / mobile to save CPU/GPU */
+    @media (max-width: 600px), (prefers-reduced-motion: reduce) {
+      .loading-container::before,
+      .loading-container::after { animation: none; }
+      .loading-logo-ring { animation: none; }
+      .loading-progress-bar { animation: splash-progress 1.8s linear infinite; }
+    }
+
+    .loading-container.splash-hiding {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-container.splash-gone {
+      display: none;
+    }
+
+    .loading-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+      max-width: 360px;
+    }
+
+    .loading-logo-ring {
+      width: 88px;
+      height: 88px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 24px;
+      background: linear-gradient(145deg, rgba(139, 92, 246, 0.25), rgba(15, 23, 42, 0.8));
+      border: 1px solid rgba(167, 139, 250, 0.35);
+      box-shadow: 0 0 28px rgba(139, 92, 246, 0.2);
+      animation: splash-pulse 2.5s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    .loading-logo-ring img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+    }
+
+    .loading-brand {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .loading-tagline {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      color: rgba(226, 232, 240, 0.75);
+      margin: 0 0 28px;
+      line-height: 1.5;
+    }
+
+    .loading-subtitle {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: #a78bfa;
+      margin: 0 0 14px;
+      min-height: 20px;
+    }
+
+    .loading-progress-track {
+      width: 200px;
+      height: 4px;
+      background: rgba(167, 139, 250, 0.15);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .loading-progress-bar {
+      height: 100%;
+      width: 35%;
+      background: linear-gradient(90deg, #8b5cf6, #a78bfa, #c4b5fd);
+      border-radius: 999px;
+      animation: splash-progress 1.6s ease-in-out infinite;
+    }
+
+    @keyframes splash-glow {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.08); }
+    }
+
+    @keyframes splash-pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 40px rgba(139, 92, 246, 0.25); }
+      50% { transform: scale(1.03); box-shadow: 0 0 56px rgba(139, 92, 246, 0.4); }
+    }
+
+    @keyframes splash-progress {
+      0% { transform: translateX(-120%); }
+      100% { transform: translateX(420%); }
+    }
+
+    /* Hide Flutter default loader if injected */
+    flutter-loader,
+    #flutter-loader,
+    .flutter-loader {
+      display: none !important;
+    }
+
+    /* Hide splash when dismissed or Flutter ready */
+    .flutter-loaded .loading-container {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* SEO prerender shell — semantic HTML until Flutter replaces the view */
+    .seo-prerender {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 20px 120px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #1e293b;
+      background: #ffffff;
+    }
+
+    .seo-prerender nav ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+      list-style: none;
+      padding: 0;
+      margin: 12px 0 24px;
+    }
+
+    .seo-prerender a {
+      color: #8B5CF6;
+    }
+
+    .flutter-loaded .seo-prerender {
+      display: none;
+    }
+
+    body.splash-active .seo-prerender {
+      visibility: hidden;
+      position: absolute;
+      width: 0;
+      height: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    /* Critical CSS for instant rendering */
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #0f172a;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body.flutter-loaded {
+      overflow: auto;
+      background: #ffffff;
+    }
+
+    /* Ensure smooth animations */
+    * {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+</head>
+
+<body class="splash-active">
+  <!-- Local dev: hide browser network 404 noise in console (request never made for dead endpoints) -->
+  <script>
+    (function () {
+      var host = location.hostname;
+      if (host !== 'localhost' && host !== '127.0.0.1') return;
+
+      function isNoisyNetworkLog(args) {
+        var text = '';
+        for (var i = 0; i < args.length; i++) text += String(args[i]) + ' ';
+        return /Failed to load resource/i.test(text) ||
+          /404\s*\(Not Found\)/i.test(text) ||
+          /127\.0\.0\.1:8088\/api\//i.test(text) ||
+          /net::ERR_/i.test(text);
+      }
+
+      ['error', 'warn'].forEach(function (level) {
+        var original = console[level];
+        console[level] = function () {
+          if (isNoisyNetworkLog(arguments)) return;
+          return original.apply(console, arguments);
+        };
+      });
+    })();
+  </script>
+
+  <!-- Branded loading — visible until Flutter first frame -->
+  <div class="loading-container" id="loading" role="status" aria-live="polite" aria-busy="true" aria-label="جاري تحميل تقنات">
+    <div class="loading-content">
+      <div class="loading-logo-ring">
+        <img src="icons/app_icon.png" alt="تقنات" width="64" height="64" decoding="async" fetchpriority="high">
+      </div>
+      <p class="loading-brand" id="loading-brand">تقنات</p>
+      <p class="loading-tagline" id="loading-tagline">حلول وأنظمة بتقانة متطورة</p>
+      <p class="loading-subtitle" id="loading-status">جاري التحميل...</p>
+      <div class="loading-progress-track" aria-hidden="true">
+        <div class="loading-progress-bar"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var SPLASH_FADE_MS = 150;
+      var _baseEl = document.querySelector('base');
+      var _baseHref = (_baseEl && _baseEl.getAttribute('href')) || '/';
+      try { if (/^https?:/i.test(_baseHref)) _baseHref = new URL(_baseHref).pathname; } catch (e) {}
+      var _base = (!_baseHref || _baseHref === '/') ? '' : _baseHref.replace(/\/$/, '');
+      var _appPath = window.location.pathname;
+      if (_base && (_appPath === _base || _appPath.indexOf(_base + '/') === 0)) {
+        _appPath = _appPath.slice(_base.length) || '/';
+      }
+      var isEnglish = /^\/en(\/|$)/.test(_appPath);
+
+      var brand = document.getElementById('loading-brand');
+      var tagline = document.getElementById('loading-tagline');
+      var status = document.getElementById('loading-status');
+      var loading = document.getElementById('loading');
+
+      if (isEnglish) {
+        if (brand) brand.textContent = 'Teqanat';
+        if (tagline) tagline.textContent = 'Advanced technology solutions';
+        if (status) status.textContent = 'Loading...';
+        if (loading) loading.setAttribute('aria-label', 'Loading Teqanat');
+      }
+
+      var statusMessages = isEnglish
+        ? ['Loading...', 'Preparing experience...', 'Almost ready...']
+        : ['جاري التحميل...', 'جاري تجهيز التجربة...', 'اقتربنا من الانتهاء...'];
+
+      var msgIndex = 0;
+      var statusTimer = setInterval(function () {
+        if (!status) return;
+        msgIndex = (msgIndex + 1) % statusMessages.length;
+        status.textContent = statusMessages[msgIndex];
+      }, 1800);
+
+      function dismissLoading() {
+        clearInterval(statusTimer);
+
+        document.body.classList.remove('splash-active');
+        document.body.classList.add('flutter-loaded');
+
+        if (!loading) return;
+
+        loading.classList.add('splash-hiding');
+        loading.setAttribute('aria-busy', 'false');
+        setTimeout(function () {
+          loading.classList.add('splash-gone');
+          loading.remove();
+        }, SPLASH_FADE_MS);
+      }
+
+      window.addEventListener('flutter-first-frame', function () {
+        if (window.TeqanatSeo) {
+          var locale = isEnglish ? 'en' : 'ar';
+          try {
+            if (window.TeqanatSeo && TeqanatSeo.parseLocalePath) {
+              locale = TeqanatSeo.parseLocalePath(window.location.pathname).lang;
+            }
+          } catch (e) {}
+          TeqanatSeo.syncHtmlLocale(locale);
+          TeqanatSeo.removePrerender();
+        }
+        var seo = document.getElementById('seo-prerender');
+        if (seo) seo.remove();
+        dismissLoading();
+      });
+    })();
+  </script>
+
+  <!-- Start Flutter download immediately after splash is in the DOM — async so it never blocks -->
+  <script src="flutter_bootstrap.js" async></script>
+
+  <!-- Noscript fallback for SEO (no JavaScript) -->
+  <noscript>
+    <div class="seo-prerender" style="padding: 24px; max-width: 960px; margin: 0 auto;">
+      <h1>تقنات — شركة برمجيات</h1>
+      <p>نطوّر تطبيقات الجوال والمواقع الإلكترونية وهوية العلامة التجارية والتحول الرقمي.</p>
+      <nav aria-label="روابط الموقع">
+        <ul style="list-style: none; padding: 0; line-height: 2;">
+          <li><a href="/ar">الرئيسية</a></li>
+          <li><a href="/ar/about">من نحن</a></li>
+          <li><a href="/ar/services">الخدمات</a></li>
+          <li><a href="/ar/projects">المشاريع</a></li>
+          <li><a href="/ar/pricing">الأسعار</a></li>
+          <li><a href="/ar/blog">المدونة</a></li>
+          <li><a href="/ar/contact">تواصل معنا</a></li>
+        </ul>
+      </nav>
+      <h2>خدماتنا</h2>
+      <ul>
+        <li>تطوير تطبيقات iOS و Android و Flutter</li>
+        <li>تطوير المواقع والمتاجر الإلكترونية</li>
+        <li>تصميم UI/UX والهوية البصرية</li>
+      </ul>
+      <p><a href="mailto:info@teqanat.com">info@teqanat.com</a></p>
+      <p><em>Teqanat — Professional Software Development Company</em></p>
+    </div>
+  </noscript>
+
+  <!-- Per-route semantic HTML for crawlers (removed when Flutter paints) -->
+  <main id="seo-prerender" class="seo-prerender" role="main" aria-live="polite"></main>
+  <script>
+    if (window.TeqanatSeo) {
+      var ctx = TeqanatSeo.applyHead();
+      TeqanatSeo.renderBody(ctx);
+    }
+  </script>
+
+  <script>
+    // Version check and cache clearing logic
+    async function checkVersion() {
+      try {
+        const versionUrl = new URL('version.json', document.baseURI).href;
+        const response = await fetch(versionUrl + '?t=' + new Date().getTime(), {
+          cache: 'no-store'
+        });
+        const data = await response.json();
+        const serverVersion = data.version;
+        const localVersion = localStorage.getItem('app_version');
+
+        // console.log('Server version:', serverVersion);
+        // console.log('Local version:', localVersion);
+
+        if (localVersion && localVersion !== serverVersion) {
+          // console.log('New version detected! Clearing cache and reloading...');
+
+          // Unregister service workers
+          if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (let registration of registrations) {
+              await registration.unregister();
+            }
+          }
+
+          // Clear all caches
+          if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            for (let cacheName of cacheNames) {
+              await caches.delete(cacheName);
+            }
+          }
+
+          // Update local version
+          localStorage.setItem('app_version', serverVersion);
+
+          // Force reload
+          window.location.reload(true);
+          return true;
+        } else {
+          localStorage.setItem('app_version', serverVersion);
+          return false;
+        }
+      } catch (error) {
+        // console.error('Version check failed:', error);
+        return false;
+      }
+    }
+
+    // Defer version check until after load to avoid blocking first paint
+    if (window.requestIdleCallback) {
+      requestIdleCallback(function () { checkVersion(); }, { timeout: 2000 });
+    } else {
+      window.addEventListener('load', function () { checkVersion(); });
+    }
+  </script>
+
+  <script>
+    // Register service worker relative to <base href> (GitHub Pages project paths).
+    // Skip service worker on GitHub Pages — absolute shell URLs and SPA 404
+    // caching break subdirectory deploys. Production custom domains keep SW.
+    function registerAppServiceWorker() {
+      if (!('serviceWorker' in navigator)) return;
+      var host = location.hostname;
+      if (host.endsWith('github.io')) {
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          regs.forEach(function (r) { r.unregister(); });
+        }).catch(function () {});
+        return;
+      }
+      var swUrl = new URL('sw.js', document.baseURI).href;
+      navigator.serviceWorker.register(swUrl).catch(function () {});
+    }
+    window.addEventListener('load', registerAppServiceWorker);
+    window.addEventListener('flutter-first-frame', registerAppServiceWorker, { once: true });
+  </script>
+
+  <!-- Structured Data (@graph) — end of body, does not block first paint -->
+  <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://teqanat.com/#organization",
+        "name": "تقنات",
+        "alternateName": ["Teqanat", "Teqanat Software Development"],
+        "url": "https://teqanat.com/",
+        "logo": {
+          "@type": "ImageObject",
+          "@id": "https://teqanat.com/#logo",
+          "url": "https://teqanat.com/icons/Icon-512.png",
+          "width": 512,
+          "height": 512,
+          "caption": "تقنات"
+        },
+        "image": {
+          "@type": "ImageObject",
+          "url": "https://teqanat.com/icons/og-banner.png",
+          "width": 1536,
+          "height": 1024
+        },
+        "description": "تقنات — شركة برمجيات سعودية متخصصة في تطوير تطبيقات الجوال والمواقع الإلكترونية وتصميم UI/UX والهوية البصرية والتحول الرقمي.",
+        "foundingDate": "2020",
+        "email": "info@teqanat.com",
+        "areaServed": {
+          "@type": "Country",
+          "name": "Saudi Arabia"
+        },
+        "sameAs": [
+          "https://twitter.com/teqanat",
+          "https://www.linkedin.com/company/teqanat",
+          "https://www.facebook.com/teqanat",
+          "https://www.instagram.com/teqanat"
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer service",
+          "email": "info@teqanat.com",
+          "url": "https://teqanat.com/contact",
+          "availableLanguage": ["Arabic", "English"],
+          "areaServed": "SA"
+        },
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "59 شارع أيان متفرع",
+          "addressCountry": "SA"
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://teqanat.com/#website",
+        "url": "https://teqanat.com/",
+        "name": "تقنات",
+        "alternateName": "Teqanat",
+        "description": "تقنات — شركة برمجيات متخصصة في تطوير التطبيقات والمواقع وتصميم الهوية الرقمية والتحول الرقمي.",
+        "inLanguage": ["ar-SA", "en-US"],
+        "publisher": { "@id": "https://teqanat.com/#organization" }
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://teqanat.com/#webpage",
+        "url": "https://teqanat.com/",
+        "name": "تقنات | حلول وأنظمة بتقانة متطورة",
+        "description": "تقنات — شركة برمجيات متخصصة في تطوير تطبيقات الجوال والمواقع الإلكترونية وتصميم UI/UX والهوية البصرية والتحول الرقمي.",
+        "isPartOf": { "@id": "https://teqanat.com/#website" },
+        "about": { "@id": "https://teqanat.com/#organization" },
+        "primaryImageOfPage": {
+          "@type": "ImageObject",
+          "url": "https://teqanat.com/icons/og-banner.png"
+        },
+        "inLanguage": "ar-SA"
+      },
+      {
+        "@type": ["ProfessionalService", "LocalBusiness"],
+        "@id": "https://teqanat.com/#business",
+        "name": "تقنات للبرمجيات",
+        "alternateName": "Teqanat Software Development",
+        "url": "https://teqanat.com/",
+        "image": "https://teqanat.com/icons/og-banner.png",
+        "logo": { "@id": "https://teqanat.com/#logo" },
+        "parentOrganization": { "@id": "https://teqanat.com/#organization" },
+        "email": "info@teqanat.com",
+        "priceRange": "$$",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "59 شارع أيان متفرع",
+          "addressCountry": "SA"
+        },
+        "areaServed": {
+          "@type": "Country",
+          "name": "Saudi Arabia"
+        },
+        "openingHoursSpecification": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Sunday"],
+          "opens": "09:00",
+          "closes": "18:00"
+        },
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "خدمات تقنات",
+          "itemListElement": [
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "تطوير تطبيقات الجوال",
+                "description": "تطوير تطبيقات iOS و Android و Flutter للشركات والمؤسسات",
+                "url": "https://teqanat.com/services"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "تطوير المواقع الإلكترونية",
+                "description": "تصميم وتطوير مواقع ويب وأنظمة إلكترونية حديثة",
+                "url": "https://teqanat.com/services"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "تصميم UI/UX",
+                "description": "تصميم تجربة وواجهة المستخدم للمنتجات الرقمية",
+                "url": "https://teqanat.com/services"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "الهوية البصرية",
+                "description": "تصميم هوية العلامة التجارية والحلول البصرية المتكاملة",
+                "url": "https://teqanat.com/services"
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "التحول الرقمي",
+                "description": "استشارات وتنفيذ التحول الرقمي للأعمال",
+                "url": "https://teqanat.com/services"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "@type": "ItemList",
+        "@id": "https://teqanat.com/#sitenavigation",
+        "name": "روابط الموقع الرئيسية",
+        "itemListElement": [
+          { "@type": "SiteNavigationElement", "position": 1, "name": "الرئيسية", "url": "https://teqanat.com/" },
+          { "@type": "SiteNavigationElement", "position": 2, "name": "من نحن", "url": "https://teqanat.com/about" },
+          { "@type": "SiteNavigationElement", "position": 3, "name": "الخدمات", "url": "https://teqanat.com/services" },
+          { "@type": "SiteNavigationElement", "position": 4, "name": "المشاريع", "url": "https://teqanat.com/projects" },
+          { "@type": "SiteNavigationElement", "position": 5, "name": "الأسعار", "url": "https://teqanat.com/pricing" },
+          { "@type": "SiteNavigationElement", "position": 6, "name": "المدونة", "url": "https://teqanat.com/blog" },
+          { "@type": "SiteNavigationElement", "position": 7, "name": "تواصل معنا", "url": "https://teqanat.com/contact" }
+        ]
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://teqanat.com/#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://teqanat.com/" },
+          { "@type": "ListItem", "position": 2, "name": "الخدمات", "item": "https://teqanat.com/services" },
+          { "@type": "ListItem", "position": 3, "name": "المشاريع", "item": "https://teqanat.com/projects" },
+          { "@type": "ListItem", "position": 4, "name": "من نحن", "item": "https://teqanat.com/about" },
+          { "@type": "ListItem", "position": 5, "name": "تواصل معنا", "item": "https://teqanat.com/contact" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://teqanat.com/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "ما الخدمات التي تقدمها تقنات؟",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "تقدم تقنات خدمات تطوير تطبيقات الجوال، المواقع الإلكترونية، تصميم UI/UX، الهوية البصرية، التحول الرقمي، وحلول التجارة الإلكترونية."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What services does Teqanat offer?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Teqanat offers mobile app development, web development, UI/UX design, brand identity, digital transformation, and e-commerce solutions."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "كيف أتواصل مع تقنات؟",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "يمكنك التواصل عبر البريد info@teqanat.com أو نموذج التواصل على https://teqanat.com/contact — نرد عادة خلال 24–48 ساعة."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How can I contact Teqanat?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Contact Teqanat at info@teqanat.com or via the contact form at https://teqanat.com/contact. We typically respond within 24–48 hours."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "هل تقنات تعمل مع عملاء دوليين؟",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "نعم، تقنات تخدم عملاء داخل السعودية وخارجها بالعربية والإنجليزية."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does Teqanat work with international clients?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, Teqanat works with clients worldwide in both Arabic and English."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <!-- Google Analytics — idle load, after app bootstrap -->
+  <script>
+    (function () {
+      function loadGA() {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-49PJ99FKMW';
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', 'G-49PJ99FKMW');
+      }
+      if (window.requestIdleCallback) {
+        requestIdleCallback(loadGA, { timeout: 5000 });
+      } else {
+        window.addEventListener('load', loadGA, { once: true });
+      }
+    })();
+  </script>
+</body>
+
+</html>
